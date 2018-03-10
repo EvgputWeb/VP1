@@ -12,6 +12,7 @@ mb_regex_encoding("UTF-8");
 
 if ((empty($_REQUEST['email'])) || (empty($_REQUEST['phone']))) {
     // Как лучше всего обработать ошибку ???
+    header("Location: error.php?errcode=4001");
     return;
 }
 
@@ -36,6 +37,7 @@ try {
     $dbh = new PDO($dsn, $user, $pass, $opt);
 } catch (PDOException $e) {
     // Как лучше всего обработать ошибку ???
+    header("Location: error.php?errcode=4002");
     return;
 }
 
@@ -51,6 +53,7 @@ try {
     $userId = $sth->fetchColumn();
 } catch (PDOException $e) {
     // Как лучше всего обработать ошибку ???
+    header("Location: error.php?errcode=4003");
     return;
 }
 
@@ -66,6 +69,7 @@ if ($userId === false) {
         $userId = $dbh->lastInsertId();
     } catch (PDOException $e) {
         // Как лучше всего обработать ошибку ???
+        header("Location: error.php?errcode=4004");
         return;
     }
 }
@@ -100,6 +104,7 @@ try {
     $orderId = $dbh->lastInsertId();
 } catch (PDOException $e) {
     // Как лучше всего обработать ошибку ???
+    header("Location: error.php?errcode=4005");
     return;
 }
 
@@ -139,6 +144,7 @@ function getOrderNumber(PDO $dbh, $userId)
         $count = $sth->fetchColumn();
     } catch (PDOException $e) {
         // Как лучше всего обработать ошибку ???
+        header("Location: error.php?errcode=4006");
         return null;
     }
     if ($count == 1) {
@@ -152,7 +158,12 @@ function getOrderNumber(PDO $dbh, $userId)
 // Папка для писем
 $emailsFolder = __DIR__ . DIRECTORY_SEPARATOR . '_emails_';
 if (!file_exists($emailsFolder)) {
-    mkdir($emailsFolder, 0600);
+    try {
+        mkdir($emailsFolder, 0600);
+    } catch (ErrorException $e) {
+        header("Location: error.php?errcode=4006");
+        return;
+    }
 }
 
 // Файл для сохранения текста письма
