@@ -64,8 +64,8 @@ if ($userId === false) {
 // Записываем данные заказа в таблицу orders
 // По окончании этой фазы имеем в наличии orderId
 
-((!empty($_REQUEST['payment'])) && ($_REQUEST['payment'] = 'card')) ? ($payment = 1) : ($payment = 0);
-((!empty($_REQUEST['callback'])) && ($_REQUEST['callback'] = 'on')) ? ($callback = 1) : ($callback = 0);
+((!empty($_REQUEST['payment'])) && ($_REQUEST['payment'] == 'card')) ? ($payment = 1) : ($payment = 0);
+((!empty($_REQUEST['callback'])) && ($_REQUEST['callback'] == 'on')) ? ($callback = 1) : ($callback = 0);
 
 $sql = "INSERT INTO orders" .
     "(user_id, street, home, part, appt, floor, comment, payment, callback) " .
@@ -97,26 +97,9 @@ try {
 // Фаза 3: "Письмо" пользователю
 //
 
-// Функция для формирования адреса в удобочитаемом виде
-function getBeautyAddress()
-{
-    $addrPart = ['street', 'home', 'part', 'appt', 'floor'];
-    $addrPrefix = ['ул. ', 'д. ', 'корп. ', 'кв. ', 'этаж '];
-    $address = '';
-    for ($i = 0; $i < count($addrPart); $i++) {
-        if (!empty($_REQUEST[$addrPart[$i]])) {
-            $address .= $addrPrefix[$i] . $_REQUEST[$addrPart[$i]] . ', ';
-        }
-    }
-    $address = trim($address); // удаляем пробелы вначале и в конце строки
-    if (mb_strlen($address) > 1) {
-        $lastChar = mb_substr($address, -1, 1); // последний символ строки
-        if ($lastChar == ',') {
-            $address = mb_substr($address, 0, mb_strlen($address) - 1);
-        }
-    }
-    return $address;
-}
+// Подключаем полезные функции
+require_once 'utils.php';
+
 
 // Функция для получения номера заказа указанного пользователя
 // Возвращает строку. Например: "первый", "12-й"
@@ -139,7 +122,7 @@ function getOrderNumber(PDO $dbh, $userId)
 }
 
 //-----------------------------------------------------
-// Папка для писем
+// Создаём папка для писем, если её нет
 $emailsFolder = __DIR__ . DIRECTORY_SEPARATOR . '_emails_';
 if (!file_exists($emailsFolder)) {
     try {
@@ -149,18 +132,23 @@ if (!file_exists($emailsFolder)) {
         return;
     }
 }
+//-----------------------------------------------------
 
 // Файл для сохранения текста письма
 $emailFileName = $emailsFolder . DIRECTORY_SEPARATOR . date('Y-m-d__H-i-s') . '.txt';
 
+// Получаем адрес и номер заказа данного пользователя
+$userAddress = makeBeautyAddress($_REQUEST['street'], $_REQUEST['home'], $_REQUEST['part'], $_REQUEST['appt'], $_REQUEST['floor']);
+$userOrderNum = getOrderNumber($dbh, $userId);
+
 // Текст письма
 $mailText = "Заказ № $orderId\n\n";
 $mailText .= "Ваш заказ будет доставлен по адресу:\n";
-$mailText .= getBeautyAddress() . "\n\n";
+$mailText .= $userAddress . "\n\n";
 $mailText .= "Содержимое заказа:\n";
 $mailText .= "DarkBeefBurger за 500 рублей, 1 шт\n\n";
 $mailText .= "Спасибо!\n";
-$mailText .= "Это Ваш " . getOrderNumber($dbh, $userId) . " заказ!\n";
+$mailText .= "Это Ваш " . $userOrderNum . " заказ!\n";
 
 // Пишем в файл
 file_put_contents($emailFileName, $mailText);

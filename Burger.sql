@@ -31,7 +31,7 @@ CREATE TABLE IF NOT EXISTS `orders` (
   PRIMARY KEY (`id`),
   KEY `FK_orders_users` (`user_id`),
   CONSTRAINT `FK_orders_users` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=11 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 -- Экспортируемые данные не выделены.
 -- Дамп структуры для таблица Burger.users
@@ -40,8 +40,9 @@ CREATE TABLE IF NOT EXISTS `users` (
   `name` varchar(50) DEFAULT NULL,
   `email` varchar(50) NOT NULL,
   `phone` varchar(20) NOT NULL,
-  PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=8 DEFAULT CHARSET=utf8;
+  PRIMARY KEY (`id`),
+  UNIQUE INDEX `email` (`email`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 -- Экспортируемые данные не выделены.
 /*!40101 SET SQL_MODE=IFNULL(@OLD_SQL_MODE, '') */;
