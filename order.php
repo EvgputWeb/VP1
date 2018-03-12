@@ -12,32 +12,16 @@ mb_regex_encoding("UTF-8");
 
 if ((empty($_REQUEST['email'])) || (empty($_REQUEST['phone']))) {
     // Как лучше всего обработать ошибку ???
-    header("Location: error.php?errcode=4001");
+    header("Location: error.php?errcode=4000");
     return;
 }
 
 //=========================================================================================
-// Подключаемся к базе: параметры подключения
-$host = '127.0.0.1';
-$db = 'Burger';
-$user = 'root';
-$pass = '';
-$charset = 'utf8';
+// Подключаемся к базе
+$dbh = require_once 'dbconnect.php';
 
-try {
-    // data source name
-    $dsn = "mysql:host=$host;dbname=$db;charset=$charset";
-    $opt = [
-        PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
-        PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
-        PDO::ATTR_EMULATE_PREPARES => false
-    ];
-
-    // Подключаемся к базе
-    $dbh = new PDO($dsn, $user, $pass, $opt);
-} catch (PDOException $e) {
-    // Как лучше всего обработать ошибку ???
-    header("Location: error.php?errcode=4002");
+if ($dbh === false) {
+    header("Location: error.php?errcode=4001");
     return;
 }
 
@@ -134,7 +118,7 @@ function getBeautyAddress()
     return $address;
 }
 
-// Функция для получения номера заказа данного пользователя
+// Функция для получения номера заказа указанного пользователя
 // Возвращает строку. Например: "первый", "12-й"
 function getOrderNumber(PDO $dbh, $userId)
 {
@@ -159,9 +143,9 @@ function getOrderNumber(PDO $dbh, $userId)
 $emailsFolder = __DIR__ . DIRECTORY_SEPARATOR . '_emails_';
 if (!file_exists($emailsFolder)) {
     try {
-        mkdir($emailsFolder, 0600);
+        mkdir($emailsFolder, 0777);
     } catch (ErrorException $e) {
-        header("Location: error.php?errcode=4006");
+        header("Location: error.php?errcode=4007");
         return;
     }
 }
@@ -183,5 +167,5 @@ file_put_contents($emailFileName, $mailText);
 
 //=========================================================================================
 
-// Работа выполнена. Возвращаемся обратно
+// Работа выполнена. Возвращаемся обратно - на главную страницу
 header("Location: index.html");

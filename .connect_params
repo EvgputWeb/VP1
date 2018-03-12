@@ -1,0 +1,3 @@
+host,dbname,user,password,charset
+localhost,burger,root,,utf8
+//localhost,cx44834_burger,cx44834_burger,12345,utf8
